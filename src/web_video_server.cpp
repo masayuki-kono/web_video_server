@@ -63,6 +63,7 @@ WebVideoServer::WebVideoServer(const rclcpp::NodeOptions & options)
   declare_parameter("server_threads", 1);
   declare_parameter("publish_rate", -1.0);
   declare_parameter("default_stream_type", "mjpeg");
+  declare_parameter("max_streams", 1);
 
   get_parameter("port", port_);
   get_parameter("verbose", verbose_);
@@ -71,6 +72,7 @@ WebVideoServer::WebVideoServer(const rclcpp::NodeOptions & options)
   get_parameter("server_threads", server_threads);
   get_parameter("publish_rate", publish_rate_);
   get_parameter("default_stream_type", default_stream_type_);
+  get_parameter("max_streams", max_streams_);
 
   stream_types_["mjpeg"] = std::make_shared<MjpegStreamerType>();
   stream_types_["png"] = std::make_shared<PngStreamerType>();
@@ -173,6 +175,7 @@ bool WebVideoServer::handle_stream(
   std::string type = request.get_query_param_value_or_default("type", default_stream_type_);
   if (stream_types_.find(type) != stream_types_.end()) {
     std::string topic = request.get_query_param_value_or_default("topic", "");
+
     // Fallback for topics without corresponding compressed topics
     if (type == std::string("ros_compressed")) {
       std::string compressed_topic_name = topic + "/compressed";
@@ -203,6 +206,16 @@ bool WebVideoServer::handle_stream(
     streamer->start();
     std::scoped_lock lock(subscriber_mutex_);
     image_subscribers_.push_back(streamer);
+
+    // inactivate existing streams
+    if (image_subscribers_.size() > static_cast<size_t>(max_streams_)) {
+      // inactivate oldest stream
+      image_subscribers_.front()->setInactive(true);
+      if (verbose_) {
+        RCLCPP_INFO(get_logger(), "Deactivating oldest stream(topic: %s) due to max_streams limit(%d)", 
+          image_subscribers_.front()->getTopic().c_str(), max_streams_);
+      }
+    }
   } else {
     async_web_server_cpp::HttpReply::stock_reply(async_web_server_cpp::HttpReply::not_found)(
       request, connection, begin, end);
