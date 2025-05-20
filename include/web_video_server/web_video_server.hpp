@@ -106,6 +106,7 @@ private:
   std::string address_;
   bool verbose_;
   std::string default_stream_type_;
+  int max_streams_;
 
   std::shared_ptr<async_web_server_cpp::HttpServer> server_;
   async_web_server_cpp::HttpRequestHandlerGroup handler_group_;

@@ -62,6 +62,11 @@ public:
     return inactive_;
   }
 
+  void setInactive(bool inactive)
+  {
+    inactive_ = inactive;
+  }
+
   /**
    * Restreams the last received image frame if older than max_age.
    */
