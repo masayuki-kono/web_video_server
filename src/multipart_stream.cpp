@@ -31,8 +31,22 @@
 #include "web_video_server/multipart_stream.hpp"
 #include "async_web_server_cpp/http_reply.hpp"
 
+static const std::string DEFAULT_BOUNDRY = "boundarydonotcross";
+static const std::size_t DEFAULT_MAX_QUEUE_SIZE = 2;
+
 namespace web_video_server
 {
+
+MultipartStream::MultipartStream(
+  async_web_server_cpp::HttpConnectionPtr & connection)
+: MultipartStream(connection, DEFAULT_MAX_QUEUE_SIZE)
+{}
+
+MultipartStream::MultipartStream(
+  async_web_server_cpp::HttpConnectionPtr & connection,
+  std::size_t max_queue_size)
+: MultipartStream(connection, DEFAULT_BOUNDRY, max_queue_size)
+{}
 
 MultipartStream::MultipartStream(
   async_web_server_cpp::HttpConnectionPtr & connection,
