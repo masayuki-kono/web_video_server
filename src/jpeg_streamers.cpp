@@ -38,7 +38,7 @@ MjpegStreamer::MjpegStreamer(
   const async_web_server_cpp::HttpRequest & request,
   async_web_server_cpp::HttpConnectionPtr connection, rclcpp::Node::SharedPtr node)
 : ImageTransportImageStreamer(request, connection, node),
-  stream_(connection)
+  stream_(node, connection)
 {
   quality_ = request.get_query_param_value_or_default<int>("quality", 95);
   stream_.sendInitialHeader();
@@ -48,6 +48,11 @@ MjpegStreamer::~MjpegStreamer()
 {
   this->inactive_ = true;
   std::scoped_lock lock(send_mutex_);  // protects sendImage.
+}
+
+bool MjpegStreamer::isBusy()
+{
+  return stream_.isBusy();
 }
 
 void MjpegStreamer::sendImage(

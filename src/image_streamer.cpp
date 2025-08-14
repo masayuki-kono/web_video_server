@@ -161,7 +161,7 @@ cv::Mat ImageTransportImageStreamer::decodeImage(
 
 void ImageTransportImageStreamer::imageCallback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
 {
-  if (inactive_) {
+  if (inactive_ || isBusy()) {
     return;
   }
 

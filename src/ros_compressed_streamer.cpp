@@ -36,7 +36,7 @@ namespace web_video_server
 RosCompressedStreamer::RosCompressedStreamer(
   const async_web_server_cpp::HttpRequest & request,
   async_web_server_cpp::HttpConnectionPtr connection, rclcpp::Node::SharedPtr node)
-: ImageStreamer(request, connection, node), stream_(connection)
+: ImageStreamer(request, connection, node), stream_(node, connection)
 {
   stream_.sendInitialHeader();
   qos_profile_name_ = request.get_query_param_value_or_default("qos_profile", "default");
@@ -72,6 +72,11 @@ void RosCompressedStreamer::start()
   image_sub_ = node_->create_subscription<sensor_msgs::msg::CompressedImage>(
     compressed_topic, qos,
     std::bind(&RosCompressedStreamer::imageCallback, this, std::placeholders::_1));
+}
+
+bool RosCompressedStreamer::isBusy()
+{
+  return stream_.isBusy();
 }
 
 void RosCompressedStreamer::restreamFrame(std::chrono::duration<double> max_age)
@@ -129,6 +134,10 @@ void RosCompressedStreamer::sendImage(
 void RosCompressedStreamer::imageCallback(
   const sensor_msgs::msg::CompressedImage::ConstSharedPtr msg)
 {
+  if (inactive_ || isBusy()) {
+    return;
+  }
+
   std::scoped_lock lock(send_mutex_);  // protects last_msg and last_frame
   last_msg = msg;
   last_frame_ = std::chrono::steady_clock::now();

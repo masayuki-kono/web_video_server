@@ -42,7 +42,7 @@ namespace web_video_server
 PngStreamer::PngStreamer(
   const async_web_server_cpp::HttpRequest & request,
   async_web_server_cpp::HttpConnectionPtr connection, rclcpp::Node::SharedPtr node)
-: ImageTransportImageStreamer(request, connection, node), stream_(connection)
+: ImageTransportImageStreamer(request, connection, node), stream_(node, connection)
 {
   quality_ = request.get_query_param_value_or_default<int>("quality", 3);
   stream_.sendInitialHeader();
@@ -52,6 +52,11 @@ PngStreamer::~PngStreamer()
 {
   this->inactive_ = true;
   std::scoped_lock lock(send_mutex_);  // protects sendImage.
+}
+
+bool PngStreamer::isBusy()
+{
+  return stream_.isBusy();
 }
 
 cv::Mat PngStreamer::decodeImage(const sensor_msgs::msg::Image::ConstSharedPtr & msg)

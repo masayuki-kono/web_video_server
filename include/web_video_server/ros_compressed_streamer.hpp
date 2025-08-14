@@ -54,6 +54,7 @@ public:
   virtual void restreamFrame(std::chrono::duration<double> max_age);
 
 protected:
+  virtual bool isBusy();
   virtual void sendImage(
     const sensor_msgs::msg::CompressedImage::ConstSharedPtr msg,
     const std::chrono::steady_clock::time_point & time);
