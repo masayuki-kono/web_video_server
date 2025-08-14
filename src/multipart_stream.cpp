@@ -32,27 +32,31 @@
 #include "async_web_server_cpp/http_reply.hpp"
 
 static const std::string DEFAULT_BOUNDRY = "boundarydonotcross";
-static const std::size_t DEFAULT_MAX_QUEUE_SIZE = 2;
+static constexpr std::size_t DEFAULT_MAX_QUEUE_SIZE = 2;
+static constexpr double FOOTER_TIMEOUT_SECONDS = 3.0;
 
 namespace web_video_server
 {
 
 MultipartStream::MultipartStream(
+  rclcpp::Node::SharedPtr node,
   async_web_server_cpp::HttpConnectionPtr & connection)
-: MultipartStream(connection, DEFAULT_MAX_QUEUE_SIZE)
+: MultipartStream(node, connection, DEFAULT_MAX_QUEUE_SIZE)
 {}
 
 MultipartStream::MultipartStream(
+  rclcpp::Node::SharedPtr node,
   async_web_server_cpp::HttpConnectionPtr & connection,
   std::size_t max_queue_size)
-: MultipartStream(connection, DEFAULT_BOUNDRY, max_queue_size)
+: MultipartStream(node, connection, DEFAULT_BOUNDRY, max_queue_size)
 {}
 
 MultipartStream::MultipartStream(
+  rclcpp::Node::SharedPtr node,
   async_web_server_cpp::HttpConnectionPtr & connection,
   const std::string & boundry,
   std::size_t max_queue_size)
-: max_queue_size_(max_queue_size), connection_(connection), boundry_(boundry)
+: node_(node), max_queue_size_(max_queue_size), connection_(connection), boundry_(boundry)
 {}
 
 void MultipartStream::sendInitialHeader()
@@ -130,9 +134,14 @@ bool MultipartStream::isBusy()
     } else {
       auto footer_time = pending_footers_.front().timestamp;
       if (std::chrono::duration_cast<std::chrono::duration<double>>(
-          (current_time - footer_time)).count() > 0.5)
+          (current_time - footer_time)).count() > FOOTER_TIMEOUT_SECONDS)
       {
         pending_footers_.pop();
+        RCLCPP_INFO(
+          node_->get_logger(), "footer discarded after %.3f seconds since header was written (timeout: %.1f sec)",
+          std::chrono::duration_cast<std::chrono::duration<double>>(
+            (current_time - footer_time)).count(),
+          FOOTER_TIMEOUT_SECONDS);
       } else {
         break;
       }

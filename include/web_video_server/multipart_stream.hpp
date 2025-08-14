@@ -51,11 +51,14 @@ class MultipartStream
 {
 public:
   MultipartStream(
+    rclcpp::Node::SharedPtr node,
     async_web_server_cpp::HttpConnectionPtr & connection);
   MultipartStream(
+    rclcpp::Node::SharedPtr node,
     async_web_server_cpp::HttpConnectionPtr & connection,
     std::size_t max_queue_size);
   MultipartStream(
+    rclcpp::Node::SharedPtr node,
     async_web_server_cpp::HttpConnectionPtr & connection,
     const std::string & boundry, std::size_t max_queue_size);
 
@@ -71,11 +74,10 @@ public:
     const std::chrono::steady_clock::time_point & time, const std::string & type,
     const boost::asio::const_buffer & buffer,
     async_web_server_cpp::HttpConnection::ResourcePtr resource);
-
-private:
   bool isBusy();
 
 private:
+  rclcpp::Node::SharedPtr node_;
   const std::size_t max_queue_size_;
   async_web_server_cpp::HttpConnectionPtr connection_;
   std::string boundry_;

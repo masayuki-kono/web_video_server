@@ -52,6 +52,7 @@ public:
   ~MjpegStreamer();
 
 protected:
+  virtual bool isBusy();
   virtual void sendImage(const cv::Mat &, const std::chrono::steady_clock::time_point & time);
 
 private:
