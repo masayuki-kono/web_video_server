@@ -153,6 +153,9 @@ cv::Mat ImageTransportImageStreamer::decodeImage(
       float_image *= (255 / max_val);
     }
     return float_image;
+  } else if (msg->encoding == sensor_msgs::image_encodings::MONO8) {
+    // Keep grayscale images as mono8
+    return cv_bridge::toCvCopy(msg, "mono8")->image;
   } else {
     // Convert to OpenCV native BGR color
     return cv_bridge::toCvCopy(msg, "bgr8")->image;
