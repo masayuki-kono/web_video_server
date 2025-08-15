@@ -85,10 +85,7 @@ protected:
   image_transport::Subscriber image_sub_;
   std::string topic_;
 
-  virtual bool isBusy()
-  {
-    return false;
-  }
+  virtual bool isBusy() = 0;
 };
 
 

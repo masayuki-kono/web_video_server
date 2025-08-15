@@ -52,7 +52,7 @@ public:
   ~MjpegStreamer();
 
 protected:
-  virtual bool isBusy();
+  bool isBusy() override;
   virtual void sendImage(const cv::Mat &, const std::chrono::steady_clock::time_point & time);
 
 private:
@@ -79,6 +79,7 @@ public:
   ~JpegSnapshotStreamer();
 
 protected:
+  bool isBusy() override { return false; }
   virtual void sendImage(const cv::Mat &, const std::chrono::steady_clock::time_point & time);
 
 private:

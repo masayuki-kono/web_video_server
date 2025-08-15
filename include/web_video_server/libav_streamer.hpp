@@ -76,6 +76,8 @@ protected:
 
   AVDictionary * opt_;   // container format options
 
+  bool isBusy() override { return false; }
+
 private:
   AVFrame * frame_;
   struct SwsContext * sws_context_;
